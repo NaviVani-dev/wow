@@ -1,6 +1,7 @@
 const validarCampos = (campos) => (req, res, next) => {
   for (const campo of campos) {
-    if (!req.body[campo] || req.body[campo].toString().trim() === '') {
+    const valor = req.body[campo];
+    if (valor === undefined || valor === null || valor.toString().trim() === '') {
       return res.status(400).json({ ok: false, error: `El campo '${campo}' es obligatorio` });
     }
   }

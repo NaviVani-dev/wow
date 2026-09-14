@@ -1,69 +1,185 @@
-import Image from "next/image";
+import Link from "next/link"
+import {
+  Home,
+  LogIn,
+  UserPlus,
+} from "lucide-react"
 
-export default function Home() {
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+
+
+
+
+const navigation = [
+  { title: "Inicio", href: "/", icon: Home },
+  { title: "Registro", href: "/registro_participante", icon: UserPlus },
+  { title: "Anfitriones", href: "/anfitrion/login/", icon: LogIn },
+]
+
+const slides = [
+  {
+    title: "EA SPORTS FC 26",
+    description: "Demuestra quién domina la cancha y llega a la final del torneo.",
+    image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=1800&q=85",
+  },
+  {
+    title: "Rocket League",
+    description: "Velocidad, precisión y goles imposibles en una competencia de alto nivel.",
+    image: "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?auto=format&fit=crop&w=1800&q=85",
+  },
+  {
+    title: "Torneo de eSports",
+    description: "Forma parte de la próxima generación de competidores y alcanza la cima.",
+    image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1800&q=85",
+  },
+  {
+    title: "EA SPORTS FC 26",
+    description: "Demuestra quién domina la cancha y llega a la final del torneo.",
+    image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=1800&q=85",
+  },
+  {
+    title: "Rocket League",
+    description: "Velocidad, precisión y goles imposibles en una competencia de alto nivel.",
+    image: "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?auto=format&fit=crop&w=1800&q=85",
+  },
+  {
+    title: "Torneo de eSports",
+    description: "Forma parte de la próxima generación de competidores y alcanza la cima.",
+    image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1800&q=85",
+  },
+]
+
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+    <SidebarProvider>
+      <Sidebar collapsible="icon">
+        <SidebarHeader className="p-4">
+          <Link href="/" className="flex items-center gap-3 overflow-hidden">
+            <span className="truncate font-semibold">Torneo Gamer</span>
+          </Link>
+        </SidebarHeader>
+
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {navigation.map((item) => (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      render={<Link href={item.href} />}
+                      isActive={item.href === "/"}
+                      tooltip={item.title}
+                    >
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter className="p-4 text-xs text-sidebar-foreground/60 group-data-[collapsible=icon]:hidden">
+          Plataforma de torneos 
+        </SidebarFooter>
+      </Sidebar>
+      <SidebarInset>
+         <header className="flex h-12 items-center gap-2 border-b px-4 sm:px-6">
+          <SidebarTrigger />
+          <span className="text-sm text-muted-foreground">Inicio</span>
+        </header>
+        <section className="flex flex-1 flex-col items-center gap-4 px-4 py-6 sm:px-6 lg:px-8">
+           <div className="w-full max-w-7xl">
+
+           <Card className="w-full max-w-10xl mb-8">
+            <CardHeader className="space-y-4 py-4">
+              <CardTitle className="text-3xl md:text-3xl font-extrabold tracking-tight leading-tight">
+                ¡Tu Próxima Victoria Empieza Aquí!
+              </CardTitle>
+              <CardDescription className="space-y-4 text-base md:text-lg leading-relaxed">
+                <h2 className="text-md font-semibold text-foreground">
+                  ¿Crees tener lo necesario para llegar a la cima? 🔥
+                </h2>
+                <p className="max-w-4xl text-muted-foreground text-lg">
+                  Entra al torneo, demuestra tus habilidades y enfréntate a jugadores
+                  que buscan la victoria igual que tú. Cada partida es una oportunidad
+                  para destacar, superar tus límites y conquistar el primer lugar.
+                </p>
+                <p className="text-xl font-bold tracking-wide text-foreground my-6">
+                  Compite. Domina. Gana. 
+                </p>
+                <p className="font-semibold text-foreground text-md">
+                  ¡Inscríbete y demuestra de qué estás hecho!
+                </p>
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <div className="w-full max-w-10xl my-14">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              Juegos Participando
+            </h2>
+          </div>
+
+            <Carousel className="mt-4 w-full" opts={{ loop: true }} autoPlay={5000}>
+              <CarouselContent className="-ml-4">
+                {slides.map((slide) => (
+                  <CarouselItem
+                    key={slide.title}
+                    className="basis-1/3 pl-4"
+                  >
+                    <article
+                      className="relative flex min-h-140 overflow-hidden rounded-3xl bg-cover bg-center shadow-xl sm:min-h-170"
+                      style={{ backgroundImage: `url(${slide.image})` }}
+                    >
+                      <div className="absolute inset-0 bg-linear-to-t from-black via-black/45 to-black/10" />
+
+                      <div className="relative z-10 flex w-full flex-col justify-end p-8 text-white sm:p-14">
+                        <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-6xl">
+                          {slide.title}
+                        </h1>
+                        <p className="mt-4 max-w-2xl text-base text-white/80 sm:text-xl">
+                          {slide.description}
+                        </p>
+                      </div>
+                    </article>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+
+
+      </div>
+    </section>
+  </SidebarInset>
+ </SidebarProvider>
+  )
 }

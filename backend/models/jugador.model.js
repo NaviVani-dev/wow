@@ -17,4 +17,11 @@ const buscarPorGamertag = async (gamertag) => {
   return rows[0];
 };
 
-export default { insertar, buscarPorGamertag };
+const obtenerTodos = async () => {
+  const [rows] = await pool.query(
+    'SELECT gamertag, correo, fecha_registro FROM jugadores'
+  );
+  return rows;
+};
+
+export default { insertar, buscarPorGamertag, obtenerTodos };

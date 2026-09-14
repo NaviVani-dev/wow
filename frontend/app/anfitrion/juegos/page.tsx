@@ -6,6 +6,7 @@ import { Gamepad2, Home, LogOut, ShieldCheck, UserPlus } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import { crearVideojuego } from "@/lib/api";
+import { useAnfitrionAuth } from "@/hooks/use-anfitrion-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -33,6 +34,7 @@ const navigation = [
 
 export default function AnfitrionJuegosPage() {
   const pathname = usePathname();
+  const { checkingSession } = useAnfitrionAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
@@ -59,6 +61,8 @@ export default function AnfitrionJuegosPage() {
       setIsSubmitting(false);
     }
   };
+
+  if (checkingSession) return <main className="grid min-h-screen place-items-center text-sm text-muted-foreground">Verificando sesión…</main>;
 
   return (
     <SidebarProvider>

@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { FormEvent, useState } from "react"
+import { useRouter } from "next/navigation"
 import { ArrowLeft, Trophy } from "lucide-react"
 
 import { registrarJugador } from "@/lib/api"
@@ -16,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input"
 
 export default function RegistroPage() {
+  const router = useRouter()
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -34,6 +36,7 @@ export default function RegistroPage() {
       })
       formElement.reset()
       setStatus({ type: "success", message: "Tu registro fue enviado correctamente." })
+      router.replace("/")
     } catch (error) {
       setStatus({ type: "error", message: error instanceof Error ? error.message : "Ocurrió un error al enviar el registro." })
     } finally {

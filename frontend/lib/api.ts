@@ -27,6 +27,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   let response: Response;
   try {
     response = await fetch(`${API_URL}${path}`, {
+      credentials: "include",
       headers: { "Content-Type": "application/json", ...options?.headers },
       ...options,
     });
@@ -41,8 +42,8 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return data as T;
 }
 
-function post<T>(path: string, body: T) {
-  return request<{ ok: true; id: number }>(path, { method: "POST", body: JSON.stringify(body) });
+function post<T, R = { ok: true; id: number }>(path: string, body: T) {
+  return request<R>(path, { method: "POST", body: JSON.stringify(body) });
 }
 
 export function registrarJugador(datos: { nombre: string; gamertag: string; correo: string }) {
@@ -73,4 +74,18 @@ export function obtenerRanking() {
 
 export function obtenerEstadisticas() {
   return request<{ ok: true; estadisticas: Estadisticas }>("/estadisticas");
+}
+
+export type Anfitrion = { id: number; nombre: string; correo: string };
+
+export function iniciarSesion(datos: { correo: string; password: string }) {
+  return post<{ correo: string; password: string }, { ok: true; anfitrion: Anfitrion }>("/auth/login", datos);
+}
+
+export function obtenerSesion() {
+  return request<{ ok: true; anfitrion: Anfitrion }>("/auth/sesion");
+}
+
+export function cerrarSesion() {
+  return request<{ ok: true }>("/auth/logout", { method: "POST" });
 }

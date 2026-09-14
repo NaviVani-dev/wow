@@ -6,6 +6,7 @@ import { Gamepad2, Home, Search, ShieldCheck, UserPlus, Users } from "lucide-rea
 import { usePathname } from "next/navigation";
 
 import { obtenerJugadores, obtenerVideojuegos, registrarPuntuacion, type Jugador, type Videojuego } from "@/lib/api";
+import { useAnfitrionAuth } from "@/hooks/use-anfitrion-auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -26,6 +27,7 @@ function formatDate(value: string) {
 
 export default function AnfitrionJugadoresPage() {
   const pathname = usePathname();
+  const { anfitrion, checkingSession } = useAnfitrionAuth();
   const [players, setPlayers] = useState<Jugador[]>([]);
   const [games, setGames] = useState<Videojuego[]>([]);
   const [search, setSearch] = useState("");
@@ -49,11 +51,14 @@ export default function AnfitrionJugadoresPage() {
   };
 
   useEffect(() => {
+    if (checkingSession || !anfitrion) return;
     void Promise.resolve().then(() => loadPlayers());
     void obtenerVideojuegos()
       .then((response) => setGames(response.videojuegos))
       .catch((error) => setMessage({ type: "error", text: error instanceof Error ? error.message : "No se pudieron cargar los videojuegos." }));
-  }, []);
+  }, [anfitrion, checkingSession]);
+
+  if (checkingSession) return <main className="grid min-h-screen place-items-center text-sm text-muted-foreground">Verificando sesión…</main>;
 
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

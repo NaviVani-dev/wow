@@ -58,6 +58,21 @@ const slides = [
     description: "Forma parte de la próxima generación de competidores y alcanza la cima.",
     image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1800&q=85",
   },
+  {
+    title: "EA SPORTS FC 26",
+    description: "Demuestra quién domina la cancha y llega a la final del torneo.",
+    image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=1800&q=85",
+  },
+  {
+    title: "Rocket League",
+    description: "Velocidad, precisión y goles imposibles en una competencia de alto nivel.",
+    image: "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?auto=format&fit=crop&w=1800&q=85",
+  },
+  {
+    title: "Torneo de eSports",
+    description: "Forma parte de la próxima generación de competidores y alcanza la cima.",
+    image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1800&q=85",
+  },
 ]
 
 export default function HomePage() {
@@ -90,54 +105,81 @@ export default function HomePage() {
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
-
         <SidebarFooter className="p-4 text-xs text-sidebar-foreground/60 group-data-[collapsible=icon]:hidden">
-          Plataforma de torneos UT
+          Plataforma de torneos 
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="flex h-16 items-center gap-3 border-b px-4 sm:px-6">
+         <header className="flex h-12 items-center gap-2 border-b px-4 sm:px-6">
           <SidebarTrigger />
           <span className="text-sm text-muted-foreground">Inicio</span>
         </header>
-        <section className="flex flex-1 flex-col items-center justify-center gap-4  sm:px-20">
-          <Card className="w-full max-w-10xl">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold tracking-tight">TORNEO</CardTitle>
-              <CardDescription>
-                Elige un juego, inscríbete y demuestra tus habilidades.
+        <section className="flex flex-1 flex-col items-center gap-4 px-4 py-6 sm:px-6 lg:px-8">
+           <div className="w-full max-w-7xl">
+
+           <Card className="w-full max-w-10xl mb-8">
+            <CardHeader className="space-y-4 py-4">
+              <CardTitle className="text-3xl md:text-3xl font-extrabold tracking-tight leading-tight">
+                ¡Tu Próxima Victoria Empieza Aquí!
+              </CardTitle>
+              <CardDescription className="space-y-4 text-base md:text-lg leading-relaxed">
+                <h2 className="text-md font-semibold text-foreground">
+                  ¿Crees tener lo necesario para llegar a la cima? 🔥
+                </h2>
+                <p className="max-w-4xl text-muted-foreground text-lg">
+                  Entra al torneo, demuestra tus habilidades y enfréntate a jugadores
+                  que buscan la victoria igual que tú. Cada partida es una oportunidad
+                  para destacar, superar tus límites y conquistar el primer lugar.
+                </p>
+                <p className="text-xl font-bold tracking-wide text-foreground my-6">
+                  Compite. Domina. Gana. 
+                </p>
+                <p className="font-semibold text-foreground text-md">
+                  ¡Inscríbete y demuestra de qué estás hecho!
+                </p>
               </CardDescription>
             </CardHeader>
           </Card>
-          <Carousel className="w-full max-w-12xl" opts={{ loop: true }} autoPlay={5000}>
-            <CarouselContent>
-              {slides.map((slide) => (
-                <CarouselItem key={slide.title}>
-                  <article
-                    className="relative flex min-h-140 overflow-hidden rounded-3xl bg-cover bg-center shadow-xl sm:min-h-170"
-                    style={{ backgroundImage: `url(${slide.image})` }}
+
+          <div className="w-full max-w-10xl my-14">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              Juegos Participando
+            </h2>
+          </div>
+
+            <Carousel className="mt-4 w-full" opts={{ loop: true }} autoPlay={5000}>
+              <CarouselContent className="-ml-4">
+                {slides.map((slide) => (
+                  <CarouselItem
+                    key={slide.title}
+                    className="basis-1/3 pl-4"
                   >
-                    <div className="absolute inset-0 bg-linear-to-t from-black via-black/45 to-black/10" />
-                    <div className="relative z-10 flex w-full flex-col justify-end p-8 text-white sm:p-14">
-                      <p className="text-sm font-semibold tracking-[0.22em] text-primary-foreground/80">JUEGO DESTACADO</p>
-                      <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-6xl">{slide.title}</h1>
-                      <p className="mt-4 max-w-2xl text-base text-white/80 sm:text-xl">{slide.description}</p>
-                      <Link
-                        href="/registro_participante"
-                        className="mt-8 w-fit rounded-lg bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/85"
-                      >
-                        Unirse
-                      </Link>
-                    </div>
-                  </article>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="-left-5 border-white/30 bg-black/50 text-white hover:bg-black/70 hover:text-white sm:-left-6" />
-            <CarouselNext className="-right-5 border-white/30 bg-black/50 text-white hover:bg-black/70 hover:text-white sm:-right-6" />
-          </Carousel>
-        </section>
-      </SidebarInset>
-    </SidebarProvider>
+                    <article
+                      className="relative flex min-h-140 overflow-hidden rounded-3xl bg-cover bg-center shadow-xl sm:min-h-170"
+                      style={{ backgroundImage: `url(${slide.image})` }}
+                    >
+                      <div className="absolute inset-0 bg-linear-to-t from-black via-black/45 to-black/10" />
+
+                      <div className="relative z-10 flex w-full flex-col justify-end p-8 text-white sm:p-14">
+                        <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-6xl">
+                          {slide.title}
+                        </h1>
+                        <p className="mt-4 max-w-2xl text-base text-white/80 sm:text-xl">
+                          {slide.description}
+                        </p>
+                      </div>
+                    </article>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+
+
+      </div>
+    </section>
+  </SidebarInset>
+ </SidebarProvider>
   )
 }

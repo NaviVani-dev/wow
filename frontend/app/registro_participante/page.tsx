@@ -1,6 +1,10 @@
+"use client"
+
 import Link from "next/link"
+import { FormEvent, useState } from "react"
 import { ArrowLeft, Trophy } from "lucide-react"
 
+import { registrarJugador } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -12,6 +16,31 @@ import {
 import { Input } from "@/components/ui/input"
 
 export default function RegistroPage() {
+  const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setStatus(null)
+    setIsSubmitting(true)
+    const formElement = event.currentTarget
+    const form = new FormData(formElement)
+
+    try {
+      await registrarJugador({
+        nombre: String(form.get("nombre") ?? "").trim(),
+        gamertag: String(form.get("gamertag") ?? "").trim(),
+        correo: String(form.get("email") ?? "").trim(),
+      })
+      formElement.reset()
+      setStatus({ type: "success", message: "Tu registro fue enviado correctamente." })
+    } catch (error) {
+      setStatus({ type: "error", message: error instanceof Error ? error.message : "Ocurrió un error al enviar el registro." })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-10">
       <section className="w-full max-w-lg">
@@ -29,7 +58,7 @@ export default function RegistroPage() {
             <CardDescription>Completa tus datos para solicitar un lugar en el torneo.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form className="space-y-5">
+            <form className="space-y-5" onSubmit={handleSubmit}>
               <div className="space-y-2">
                 <label htmlFor="nombre" className="text-sm font-medium">Nombre completo</label>
                 <Input id="nombre" name="nombre" placeholder="Tu nombre" autoComplete="name" required />
@@ -46,7 +75,8 @@ export default function RegistroPage() {
                 <input type="checkbox" required className="mt-1 size-4 rounded border-input accent-primary" />
                 Acepto las reglas y condiciones del torneo.
               </label>
-              <Button type="submit" className="w-full">Enviar registro</Button>
+              {status && <p role="status" className={status.type === "success" ? "text-sm text-green-700" : "text-sm text-destructive"}>{status.message}</p>}
+              <Button type="submit" className="w-full" disabled={isSubmitting}>{isSubmitting ? "Enviando..." : "Enviar registro"}</Button>
             </form>
           </CardContent>
         </Card>

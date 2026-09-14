@@ -19,14 +19,14 @@ const buscarPorGamertag = async (gamertag) => {
 
 const obtenerTodos = async () => {
   const [rows] = await pool.query(
-    'SELECT gamertag, correo, fecha_registro FROM jugadores'
+    'SELECT id, gamertag, correo, fecha_registro FROM jugadores'
   );
   return rows;
 };
 
 const buscarPorNombreOGamertag = async (termino) => {
   const [rows] = await pool.query(
-    'SELECT gamertag, correo, fecha_registro FROM jugadores WHERE nombre LIKE ? OR gamertag LIKE ?',
+    'SELECT id, gamertag, correo, fecha_registro FROM jugadores WHERE nombre LIKE ? OR gamertag LIKE ?',
     [`%${termino}%`, `%${termino}%`]
   );
   return rows;

@@ -1,4 +1,7 @@
-import Link from "next/link"
+import Link from "next/link";
+import { LogOut } from "lucide-react";
+
+
 import {
   Home,
   LogIn,
@@ -61,7 +64,7 @@ const slides = [
   },
 ]
 
-export default function HomePage() {
+export default function AnfitrionPage() {
   return (
     <SidebarProvider>
       <Sidebar collapsible="icon">
@@ -94,7 +97,9 @@ export default function HomePage() {
         </SidebarContent>
 
         <SidebarFooter className="p-4 text-xs text-sidebar-foreground/60 group-data-[collapsible=icon]:hidden">
-          Plataforma de torneos UT
+          <Link href="/">
+              <LogOut className="size-4" /> Salir
+        </Link>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>

@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const navigation = [
-  { title: "Inicio", href: "/anfitrion", icon: Home },
+  { title: "Inicio", href: "/", icon: Home },
   { title: "Jugadores", href: "/anfitrion/jugadores", icon: UserPlus },
   { title: "Juegos", href: "/anfitrion/juegos", icon: Gamepad2 },
 ];

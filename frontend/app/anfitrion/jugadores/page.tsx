@@ -6,7 +6,7 @@ import { Gamepad2, Home, Search, ShieldCheck, UserPlus, Users } from "lucide-rea
 import { usePathname } from "next/navigation";
 
 import { obtenerJugadores, obtenerVideojuegos, registrarPuntuacion, type Jugador, type Videojuego } from "@/lib/api";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const navigation = [
-  { title: "Inicio", href: "/anfitrion", icon: Home },
+  { title: "Inicio", href: "/", icon: Home },
   { title: "Jugadores", href: "/anfitrion/jugadores", icon: UserPlus },
   { title: "Juegos", href: "/anfitrion/juegos", icon: Gamepad2 },
 ];
@@ -27,6 +27,7 @@ function formatDate(value: string) {
 export default function AnfitrionJugadoresPage() {
   const pathname = usePathname();
   const [players, setPlayers] = useState<Jugador[]>([]);
+  const [allPlayers, setAllPlayers] = useState<Jugador[]>([]);
   const [games, setGames] = useState<Videojuego[]>([]);
   const [search, setSearch] = useState("");
   const [selectedPlayer, setSelectedPlayer] = useState("");
@@ -41,6 +42,7 @@ export default function AnfitrionJugadoresPage() {
     try {
       const response = await obtenerJugadores(query);
       setPlayers(response.jugadores);
+      if (!query.trim()) setAllPlayers(response.jugadores);
     } catch (error) {
       setMessage({ type: "error", text: error instanceof Error ? error.message : "No se pudieron cargar los jugadores." });
     } finally {
@@ -86,16 +88,16 @@ export default function AnfitrionJugadoresPage() {
         <main className="flex-1 p-4 sm:p-6"><div className="mx-auto max-w-6xl space-y-6">
           {message && <p role="status" className={message.type === "success" ? "text-sm text-green-700" : "text-sm text-destructive"}>{message.text}</p>}
           <div className="grid gap-6 lg:grid-cols-[1.4fr_0.9fr]">
-            <Card><CardHeader><CardTitle>Jugadores registrados</CardTitle></CardHeader><CardContent className="space-y-4">
+            <Card><CardHeader className="flex flex-row items-center justify-between gap-2"><CardTitle>Jugadores registrados</CardTitle><Link href="/registro_participante" className={buttonVariants({ size: "sm" })}><UserPlus />Registrar jugador</Link></CardHeader><CardContent className="space-y-4">
               <form className="flex gap-2" onSubmit={handleSearch}><Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Nombre o gamertag" /><Button type="submit" variant="outline" aria-label="Buscar"><Search /></Button></form>
               <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b text-muted-foreground"><tr><th className="p-2">GAMERTAG</th><th className="p-2">CORREO</th><th className="p-2">FECHA DE REGISTRO</th></tr></thead><tbody>{loading ? <tr><td className="p-3" colSpan={3}>Cargando jugadores…</td></tr> : players.length ? players.map((player) => <tr className="border-b" key={player.id}><td className="p-2 font-medium">{player.gamertag}<span className="block text-xs text-muted-foreground">{player.nombre}</span></td><td className="p-2">{player.correo}</td><td className="p-2">{formatDate(player.fecha_registro)}</td></tr>) : <tr><td className="p-3 text-muted-foreground" colSpan={3}>No se encontraron jugadores.</td></tr>}</tbody></table></div>
             </CardContent></Card>
             <Card><CardHeader><CardTitle>Registrar puntuación</CardTitle><CardDescription>Selecciona un jugador y un videojuego existentes.</CardDescription></CardHeader><CardContent>
               <form className="space-y-4" onSubmit={handleScore}>
-                <select className="h-9 w-full rounded-lg border bg-background px-3 text-sm" value={selectedPlayer} onChange={(event) => setSelectedPlayer(event.target.value)} required><option value="">Selecciona un jugador</option>{players.map((player) => <option key={player.id} value={player.id}>{player.gamertag} — {player.nombre}</option>)}</select>
+                <select className="h-9 w-full rounded-lg border bg-background px-3 text-sm" value={selectedPlayer} onChange={(event) => setSelectedPlayer(event.target.value)} required><option value="">Selecciona un jugador</option>{allPlayers.map((player) => <option key={player.id} value={player.id}>{player.gamertag} — {player.nombre}</option>)}</select>
                 <select className="h-9 w-full rounded-lg border bg-background px-3 text-sm" value={selectedGame} onChange={(event) => setSelectedGame(event.target.value)} required><option value="">Selecciona un videojuego</option>{games.map((game) => <option key={game.id} value={game.id}>{game.nombre} — {game.genero}</option>)}</select>
                 <Input type="number" min="0" step="1" value={score} onChange={(event) => setScore(event.target.value)} placeholder="Puntuación" required />
-                <Button type="submit" className="w-full" disabled={submitting || !players.length || !games.length}>{submitting ? "Guardando…" : "Guardar puntuación"}</Button>
+                <Button type="submit" className="w-full" disabled={submitting || !allPlayers.length || !games.length}>{submitting ? "Guardando…" : "Guardar puntuación"}</Button>
               </form>
             </CardContent></Card>
           </div>

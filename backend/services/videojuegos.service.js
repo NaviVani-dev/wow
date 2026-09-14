@@ -10,7 +10,16 @@ const crear = async (datos) => {
     throw error;
   }
 
-  return await videojuegoModel.insertar({ nombre, genero });
+  try {
+    return await videojuegoModel.insertar({ nombre, genero });
+  } catch (error) {
+    if (error.code === 'ER_DUP_ENTRY') {
+      const customError = new Error('Ya existe un videojuego con ese nombre');
+      customError.status = 400;
+      throw customError;
+    }
+    throw error;
+  }
 };
 
 const listar = async () => {

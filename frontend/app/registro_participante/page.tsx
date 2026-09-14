@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { FormEvent, useState } from "react"
-import { useRouter } from "next/navigation"
 import { ArrowLeft, Trophy } from "lucide-react"
 
 import { registrarJugador } from "@/lib/api"
@@ -17,7 +16,6 @@ import {
 import { Input } from "@/components/ui/input"
 
 export default function RegistroPage() {
-  const router = useRouter()
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -35,8 +33,7 @@ export default function RegistroPage() {
         correo: String(form.get("email") ?? "").trim(),
       })
       formElement.reset()
-      setStatus({ type: "success", message: "Tu registro fue enviado correctamente." })
-      router.replace("/")
+      setStatus({ type: "success", message: "El jugador fue registrado correctamente." })
     } catch (error) {
       setStatus({ type: "error", message: error instanceof Error ? error.message : "Ocurrió un error al enviar el registro." })
     } finally {
@@ -47,9 +44,9 @@ export default function RegistroPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-10">
       <section className="w-full max-w-lg">
-        <Link href="/" className="mb-7 inline-flex items-center gap-2 text-sm text-muted-foreground transition hover:text-foreground">
+        <Link href="/anfitrion/jugadores" className="mb-7 inline-flex items-center gap-2 text-sm text-muted-foreground transition hover:text-foreground">
           <ArrowLeft className="size-4" />
-          Volver al inicio
+          Volver a jugadores
         </Link>
 
         <Card>

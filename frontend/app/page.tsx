@@ -1,185 +1,61 @@
-import Link from "next/link"
-import {
-  Home,
-  LayoutDashboard,
-  UserPlus,
-} from "lucide-react"
+"use client";
 
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel"
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Activity, Gamepad2, Home, ShieldCheck, Target, Trophy, UserPlus, Users } from "lucide-react";
+import { usePathname } from "next/navigation";
 
-
-
+import { obtenerEstadisticas, obtenerRanking, type Estadisticas, type PuntuacionRanking } from "@/lib/api";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
+  SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger,
+} from "@/components/ui/sidebar";
 
 const navigation = [
   { title: "Inicio", href: "/", icon: Home },
-  { title: "Registro", href: "/registro_participante", icon: UserPlus },
-  { title: "Panel", href: "/anfitrion", icon: LayoutDashboard },
-]
-
-const slides = [
-  {
-    title: "EA SPORTS FC 26",
-    description: "Demuestra quién domina la cancha y llega a la final del torneo.",
-    image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=1800&q=85",
-  },
-  {
-    title: "Rocket League",
-    description: "Velocidad, precisión y goles imposibles en una competencia de alto nivel.",
-    image: "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?auto=format&fit=crop&w=1800&q=85",
-  },
-  {
-    title: "Torneo de eSports",
-    description: "Forma parte de la próxima generación de competidores y alcanza la cima.",
-    image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1800&q=85",
-  },
-  {
-    title: "EA SPORTS FC 26",
-    description: "Demuestra quién domina la cancha y llega a la final del torneo.",
-    image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=1800&q=85",
-  },
-  {
-    title: "Rocket League",
-    description: "Velocidad, precisión y goles imposibles en una competencia de alto nivel.",
-    image: "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?auto=format&fit=crop&w=1800&q=85",
-  },
-  {
-    title: "Torneo de eSports",
-    description: "Forma parte de la próxima generación de competidores y alcanza la cima.",
-    image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1800&q=85",
-  },
-]
+  { title: "Jugadores", href: "/anfitrion/jugadores", icon: UserPlus },
+  { title: "Juegos", href: "/anfitrion/juegos", icon: Gamepad2 },
+];
 
 export default function HomePage() {
+  const pathname = usePathname();
+  const [stats, setStats] = useState<Estadisticas | null>(null);
+  const [ranking, setRanking] = useState<PuntuacionRanking[]>([]);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    void Promise.all([obtenerEstadisticas(), obtenerRanking()])
+      .then(([statsResponse, rankingResponse]) => {
+        setStats(statsResponse.estadisticas);
+        setRanking(rankingResponse.ranking);
+      })
+      .catch((requestError) => setError(requestError instanceof Error ? requestError.message : "No se pudieron cargar las estadísticas."));
+  }, []);
+
+  const metrics = [
+    { label: "Jugadores", value: stats?.total_jugadores, icon: Users },
+    { label: "Videojuegos", value: stats?.total_videojuegos, icon: Gamepad2 },
+    { label: "Puntuaciones", value: stats?.total_puntuaciones, icon: Target },
+    { label: "Promedio", value: stats ? Number(stats.puntuacion_promedio).toFixed(2) : undefined, icon: Trophy },
+  ];
+
   return (
     <SidebarProvider>
       <Sidebar collapsible="icon">
-        <SidebarHeader className="p-4">
-          <Link href="/" className="flex items-center gap-3 overflow-hidden">
-            <span className="truncate font-semibold">Torneo Gamer</span>
-          </Link>
-        </SidebarHeader>
-
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {navigation.map((item) => (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      render={<Link href={item.href} />}
-                      isActive={item.href === "/"}
-                      tooltip={item.title}
-                    >
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-        <SidebarFooter className="p-4 text-xs text-sidebar-foreground/60 group-data-[collapsible=icon]:hidden">
-          Plataforma de torneos 
-        </SidebarFooter>
+        <SidebarHeader className="p-4"><Link href="/" className="flex items-center gap-3"><span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground"><ShieldCheck className="size-4" /></span><span className="font-semibold">Torneo Gamer</span></Link></SidebarHeader>
+        <SidebarContent><SidebarGroup><SidebarGroupLabel>Navegación</SidebarGroupLabel><SidebarGroupContent><SidebarMenu>{navigation.map((item) => <SidebarMenuItem key={item.href}><SidebarMenuButton render={<Link href={item.href} />} isActive={pathname === item.href} tooltip={item.title}><item.icon /><span>{item.title}</span></SidebarMenuButton></SidebarMenuItem>)}</SidebarMenu></SidebarGroupContent></SidebarGroup></SidebarContent>
       </Sidebar>
       <SidebarInset>
-         <header className="flex h-12 items-center gap-2 border-b px-4 sm:px-6">
-          <SidebarTrigger />
-          <span className="text-sm text-muted-foreground">Inicio</span>
-        </header>
-        <section className="flex flex-1 flex-col items-center gap-4 px-4 py-6 sm:px-6 lg:px-8">
-           <div className="w-full max-w-7xl">
-
-           <Card className="w-full max-w-10xl mb-8">
-            <CardHeader className="space-y-4 py-4">
-              <CardTitle className="text-3xl md:text-3xl font-extrabold tracking-tight leading-tight">
-                ¡Tu Próxima Victoria Empieza Aquí!
-              </CardTitle>
-              <CardDescription className="space-y-4 text-base md:text-lg leading-relaxed">
-                <h2 className="text-md font-semibold text-foreground">
-                  ¿Crees tener lo necesario para llegar a la cima? 🔥
-                </h2>
-                <p className="max-w-4xl text-muted-foreground text-lg">
-                  Entra al torneo, demuestra tus habilidades y enfréntate a jugadores
-                  que buscan la victoria igual que tú. Cada partida es una oportunidad
-                  para destacar, superar tus límites y conquistar el primer lugar.
-                </p>
-                <p className="text-xl font-bold tracking-wide text-foreground my-6">
-                  Compite. Domina. Gana. 
-                </p>
-                <p className="font-semibold text-foreground text-md">
-                  ¡Inscríbete y demuestra de qué estás hecho!
-                </p>
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <div className="w-full max-w-10xl my-14">
-            <h2 className="text-3xl font-bold text-foreground mb-4">
-              Juegos Participando
-            </h2>
-          </div>
-
-            <Carousel className="mt-4 w-full" opts={{ loop: true }} autoPlay={5000}>
-              <CarouselContent className="-ml-4">
-                {slides.map((slide) => (
-                  <CarouselItem
-                    key={slide.title}
-                    className="basis-1/3 pl-4"
-                  >
-                    <article
-                      className="relative flex min-h-140 overflow-hidden rounded-3xl bg-cover bg-center shadow-xl sm:min-h-170"
-                      style={{ backgroundImage: `url(${slide.image})` }}
-                    >
-                      <div className="absolute inset-0 bg-linear-to-t from-black via-black/45 to-black/10" />
-
-                      <div className="relative z-10 flex w-full flex-col justify-end p-8 text-white sm:p-14">
-                        <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-6xl">
-                          {slide.title}
-                        </h1>
-                        <p className="mt-4 max-w-2xl text-base text-white/80 sm:text-xl">
-                          {slide.description}
-                        </p>
-                      </div>
-                    </article>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
-
-
-      </div>
-    </section>
-  </SidebarInset>
- </SidebarProvider>
-  )
+        <header className="flex h-16 items-center gap-3 border-b px-4 sm:px-6"><SidebarTrigger /><span className="flex items-center gap-2 text-sm text-muted-foreground"><Activity className="size-4 text-primary" />Dashboard</span></header>
+        <main className="flex-1 p-4 sm:p-6"><div className="mx-auto max-w-6xl space-y-6">
+          <div><p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">Resumen</p><h1 className="text-3xl font-bold tracking-tight">Estadísticas del torneo</h1></div>
+          {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">{metrics.map((metric) => <Card key={metric.label}><CardHeader className="pb-3"><div className="flex items-center justify-between"><CardDescription>{metric.label}</CardDescription><metric.icon className="size-4 text-primary" /></div></CardHeader><CardContent><div className="text-3xl font-bold">{metric.value ?? "—"}</div></CardContent></Card>)}</div>
+          <Card><CardHeader><CardTitle>Clasificación</CardTitle><CardDescription>Los mejores estan en la cima.</CardDescription></CardHeader><CardContent><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b text-muted-foreground"><tr><th className="p-2">POSICIÓN</th><th className="p-2">JUGADOR</th><th className="p-2">VIDEOJUEGO</th><th className="p-2 text-right">PUNTUACIÓN</th></tr></thead><tbody>{ranking.length ? ranking.map((entry) => <tr key={`${entry.posicion}-${entry.jugador}-${entry.videojuego}`} className="border-b"><td className="p-2"><Badge variant={entry.posicion === 1 ? "default" : "secondary"}>#{entry.posicion}</Badge></td><td className="p-2 font-medium">{entry.jugador}</td><td className="p-2">{entry.videojuego}</td><td className="p-2 text-right font-semibold">{entry.puntuacion}</td></tr>) : <tr><td className="p-3 text-muted-foreground" colSpan={4}>Aún no hay puntuaciones registradas.</td></tr>}</tbody></table></div></CardContent></Card>
+        </div></main>
+      </SidebarInset>
+    </SidebarProvider>
+  );
 }

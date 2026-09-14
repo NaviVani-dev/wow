@@ -22,4 +22,8 @@ const crear = async (datos) => {
   }
 };
 
-export default { crear };
+const listarRanking = async () => {
+  return await puntuacionModel.obtenerRanking();
+};
+
+export default { crear, listarRanking };

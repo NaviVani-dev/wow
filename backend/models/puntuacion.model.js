@@ -9,4 +9,19 @@ const insertar = async (datos) => {
   return result;
 };
 
-export default { insertar };
+const obtenerRanking = async () => {
+  const [rows] = await pool.query(`
+    SELECT 
+      ROW_NUMBER() OVER (ORDER BY p.puntuacion DESC) AS posicion,
+      j.gamertag AS jugador,
+      v.nombre AS videojuego,
+      p.puntuacion
+    FROM puntuaciones p
+    JOIN jugadores j ON p.jugador = j.id
+    JOIN videojuegos v ON p.videojuego = v.id
+    ORDER BY p.puntuacion DESC
+  `);
+  return rows;
+};
+
+export default { insertar, obtenerRanking };

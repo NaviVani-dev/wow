@@ -10,4 +10,13 @@ const registrar = async (req, res) => {
   }
 };
 
-export default { registrar };
+const consultar = async (req, res) => {
+  try {
+    const videojuegos = await videojuegosService.listar();
+    res.json({ ok: true, videojuegos });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
+  }
+};
+
+export default { registrar, consultar };

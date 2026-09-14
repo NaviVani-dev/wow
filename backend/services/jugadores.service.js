@@ -1,16 +1,34 @@
 import jugadorModel from '../models/jugador.model.js';
 
 const crear = async (datos) => {
-  const { nombre, gamertag, correo } = datos;
+  const { nombre, gamertag } = datos;
+  const correo = datos.correo.trim().toLowerCase();
 
-  const existe = await jugadorModel.buscarPorGamertag(gamertag);
-  if (existe) {
+  const [gamertagExistente, correoExistente] = await Promise.all([
+    jugadorModel.buscarPorGamertag(gamertag),
+    jugadorModel.buscarPorCorreo(correo),
+  ]);
+  if (gamertagExistente) {
     const error = new Error('El gamertag ya está en uso');
     error.status = 400;
     throw error;
   }
+  if (correoExistente) {
+    const error = new Error('El correo ya está registrado');
+    error.status = 400;
+    throw error;
+  }
 
-  return await jugadorModel.insertar({ nombre, gamertag, correo });
+  try {
+    return await jugadorModel.insertar({ nombre, gamertag, correo });
+  } catch (error) {
+    if (error.code === 'ER_DUP_ENTRY') {
+      const customError = new Error('El gamertag o correo ya está registrado');
+      customError.status = 400;
+      throw customError;
+    }
+    throw error;
+  }
 };
 
 const listar = async () => {

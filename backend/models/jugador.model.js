@@ -17,6 +17,14 @@ const buscarPorGamertag = async (gamertag) => {
   return rows[0];
 };
 
+const buscarPorCorreo = async (correo) => {
+  const [rows] = await pool.query(
+    'SELECT id FROM usuarios WHERE correo = ? LIMIT 1',
+    [correo]
+  );
+  return rows[0];
+};
+
 const obtenerTodos = async () => {
   const [rows] = await pool.query(
     'SELECT id, nombre, gamertag, correo, fecha_registro FROM usuarios'
@@ -32,4 +40,4 @@ const buscarPorNombreOGamertag = async (termino) => {
   return rows;
 };
 
-export default { insertar, buscarPorGamertag, obtenerTodos, buscarPorNombreOGamertag };
+export default { insertar, buscarPorGamertag, buscarPorCorreo, obtenerTodos, buscarPorNombreOGamertag };

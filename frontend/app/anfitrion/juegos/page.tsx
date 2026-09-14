@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
-import { Gamepad2, Home, LogOut, ShieldCheck, Trophy, UserPlus } from "lucide-react";
+import { Gamepad2, Home, LogOut, ShieldCheck, UserPlus } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import { crearVideojuego } from "@/lib/api";
@@ -29,7 +29,6 @@ const navigation = [
   { title: "Inicio", href: "/anfitrion", icon: Home },
   { title: "Jugadores", href: "/anfitrion/jugadores", icon: UserPlus },
   { title: "Juegos", href: "/anfitrion/juegos", icon: Gamepad2 },
-  { title: "Estadísticas", href: "/anfitrion/estadisticas", icon: Trophy },
 ];
 
 export default function AnfitrionJuegosPage() {

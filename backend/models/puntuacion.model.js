@@ -17,7 +17,7 @@ const obtenerRanking = async () => {
       v.nombre AS videojuego,
       p.puntuacion
     FROM puntuaciones p
-    JOIN jugadores j ON p.jugador = j.id
+    JOIN usuarios j ON p.jugador = j.id
     JOIN videojuegos v ON p.videojuego = v.id
     ORDER BY p.puntuacion DESC
   `);

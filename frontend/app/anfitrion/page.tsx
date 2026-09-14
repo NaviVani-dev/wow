@@ -2,253 +2,59 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Activity, Gamepad2, Home, ShieldCheck, Target, Trophy, UserPlus, Users } from "lucide-react";
 import { usePathname } from "next/navigation";
-import {
-  Activity,
-  ArrowRight,
-  Gamepad2,
-  Home,
-  LogOut,
-  LogIn,
-  ShieldCheck,
-  Target,
-  Trophy,
-  UserPlus,
-  Users,
-} from "lucide-react";
 
+import { obtenerEstadisticas, obtenerRanking, type Estadisticas, type PuntuacionRanking } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
+  SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { getStoredTournamentData, type Player, type TournamentGame } from "@/lib/tournament-data";
 
 const navigation = [
   { title: "Inicio", href: "/anfitrion", icon: Home },
   { title: "Jugadores", href: "/anfitrion/jugadores", icon: UserPlus },
   { title: "Juegos", href: "/anfitrion/juegos", icon: Gamepad2 },
-  { title: "Estadísticas", href: "/anfitrion/estadisticas", icon: Trophy },
 ];
 
 export default function AnfitrionHomePage() {
   const pathname = usePathname();
-  const [games, setGames] = useState<TournamentGame[]>([]);
-  const [players, setPlayers] = useState<Player[]>([]);
+  const [stats, setStats] = useState<Estadisticas | null>(null);
+  const [ranking, setRanking] = useState<PuntuacionRanking[]>([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const stored = getStoredTournamentData();
-    setGames(stored.games);
-    setPlayers(stored.players);
+    void Promise.all([obtenerEstadisticas(), obtenerRanking()])
+      .then(([statsResponse, rankingResponse]) => {
+        setStats(statsResponse.estadisticas);
+        setRanking(rankingResponse.ranking);
+      })
+      .catch((requestError) => setError(requestError instanceof Error ? requestError.message : "No se pudieron cargar las estadísticas."));
   }, []);
 
-  const totalScores = players.reduce(
-    (sum, player) => sum + player.games.reduce((count, game) => count + game.scores.length, 0),
-    0,
-  );
-
-  const topPlayer = players
-    .map((player) => ({
-      ...player,
-      average:
-        player.games.reduce((sum, game) => sum + game.scores.reduce((a, b) => a + b, 0), 0) /
-        Math.max(
-          player.games.reduce((count, game) => count + (game.scores.length || 1), 0),
-          1,
-        ),
-    }))
-    .sort((a, b) => b.average - a.average)[0];
+  const metrics = [
+    { label: "Jugadores", value: stats?.total_jugadores, icon: Users },
+    { label: "Videojuegos", value: stats?.total_videojuegos, icon: Gamepad2 },
+    { label: "Puntuaciones", value: stats?.total_puntuaciones, icon: Target },
+    { label: "Promedio", value: stats ? Number(stats.puntuacion_promedio).toFixed(2) : undefined, icon: Trophy },
+  ];
 
   return (
     <SidebarProvider>
       <Sidebar collapsible="icon">
-        <SidebarHeader className="p-4">
-          <Link href="/" className="flex items-center gap-3 overflow-hidden">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <ShieldCheck className="size-4" />
-            </div>
-            <span className="truncate font-semibold">Torneo Gamer</span>
-          </Link>
-        </SidebarHeader>
-
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupLabel>Navegación</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {navigation.map((item) => (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      render={<Link href={item.href} />}
-                      isActive={pathname === item.href}
-                      tooltip={item.title}
-                    >
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-
-        <SidebarFooter className="p-4 text-xs text-sidebar-foreground/60 group-data-[collapsible=icon]:hidden">
-          <Link href="/" className="flex items-center gap-2">
-            <LogOut className="size-4" />
-            Salir
-          </Link>
-        </SidebarFooter>
+        <SidebarHeader className="p-4"><Link href="/" className="flex items-center gap-3"><span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground"><ShieldCheck className="size-4" /></span><span className="font-semibold">Torneo Gamer</span></Link></SidebarHeader>
+        <SidebarContent><SidebarGroup><SidebarGroupLabel>Navegación</SidebarGroupLabel><SidebarGroupContent><SidebarMenu>{navigation.map((item) => <SidebarMenuItem key={item.href}><SidebarMenuButton render={<Link href={item.href} />} isActive={pathname === item.href} tooltip={item.title}><item.icon /><span>{item.title}</span></SidebarMenuButton></SidebarMenuItem>)}</SidebarMenu></SidebarGroupContent></SidebarGroup></SidebarContent>
       </Sidebar>
-
       <SidebarInset>
-        <header className="flex h-16 items-center gap-3 border-b px-4 sm:px-6">
-          <SidebarTrigger />
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Activity className="size-4 text-primary" />
-            Panel del anfitrión
-          </div>
-        </header>
-
-        <main className="flex-1 p-4 sm:p-6">
-          <div className="mx-auto max-w-7xl space-y-6">
-            <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-              <div>
-                <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">Resumen</p>
-                <h1 className="text-3xl font-bold tracking-tight">Gestión del torneo</h1>
-              </div>
-              <Button asChild>
-                <Link href="/anfitrion/juegos">
-                  Crear juego <ArrowRight className="ml-2 size-4" />
-                </Link>
-              </Button>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardDescription>Jugadores</CardDescription>
-                    <Users className="size-4 text-primary" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold">{players.length}</div>
-                  <p className="mt-2 text-xs text-muted-foreground">Participantes activos</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardDescription>Juegos</CardDescription>
-                    <Gamepad2 className="size-4 text-primary" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold">{games.length}</div>
-                  <p className="mt-2 text-xs text-muted-foreground">Categorías del torneo</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardDescription>Puntuaciones</CardDescription>
-                    <Target className="size-4 text-primary" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold">{totalScores}</div>
-                  <p className="mt-2 text-xs text-muted-foreground">Registros cargados</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardDescription>Máximo</CardDescription>
-                    <Trophy className="size-4 text-primary" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-lg font-bold">{topPlayer?.name ?? "Sin datos"}</div>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    {topPlayer ? `${topPlayer.elo} · ${Math.round(topPlayer.average)} avg` : "Esperando resultados"}
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="grid gap-6 lg:grid-cols-[1.3fr_0.9fr]">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Juegos activos</CardTitle>
-                  <CardDescription>Listado de partidas disponibles en el torneo.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {games.map((game) => (
-                    <div key={game.id} className="rounded-xl border bg-muted/20 p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="font-semibold">{game.name}</p>
-                          <p className="text-sm text-muted-foreground">{game.genre} · {game.format}</p>
-                        </div>
-                        <Badge variant={game.status === "Abierto" ? "default" : "secondary"}>{game.status}</Badge>
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Acceso rápido</CardTitle>
-                  <CardDescription>Herramientas principales del anfitrión.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button variant="outline" className="w-full justify-between" asChild>
-                    <Link href="/anfitrion/jugadores">
-                      Buscar jugadores
-                      <ArrowRight className="size-4" />
-                    </Link>
-                  </Button>
-                  <Button variant="outline" className="w-full justify-between" asChild>
-                    <Link href="/anfitrion/juegos">
-                      Crear nuevos juegos
-                      <ArrowRight className="size-4" />
-                    </Link>
-                  </Button>
-                  <Button variant="outline" className="w-full justify-between" asChild>
-                    <Link href="/anfitrion/estadisticas">
-                      Ver estadísticas
-                      <ArrowRight className="size-4" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </main>
+        <header className="flex h-16 items-center gap-3 border-b px-4 sm:px-6"><SidebarTrigger /><span className="flex items-center gap-2 text-sm text-muted-foreground"><Activity className="size-4 text-primary" />Panel del anfitrión</span></header>
+        <main className="flex-1 p-4 sm:p-6"><div className="mx-auto max-w-6xl space-y-6">
+          <div><p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">Resumen</p><h1 className="text-3xl font-bold tracking-tight">Estadísticas del torneo</h1></div>
+          {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">{metrics.map((metric) => <Card key={metric.label}><CardHeader className="pb-3"><div className="flex items-center justify-between"><CardDescription>{metric.label}</CardDescription><metric.icon className="size-4 text-primary" /></div></CardHeader><CardContent><div className="text-3xl font-bold">{metric.value ?? "—"}</div></CardContent></Card>)}</div>
+          <Card><CardHeader><CardTitle>Clasificación</CardTitle><CardDescription>Los mejores estan en la cima.</CardDescription></CardHeader><CardContent><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b text-muted-foreground"><tr><th className="p-2">POSICIÓN</th><th className="p-2">JUGADOR</th><th className="p-2">VIDEOJUEGO</th><th className="p-2 text-right">PUNTUACIÓN</th></tr></thead><tbody>{ranking.length ? ranking.map((entry) => <tr key={`${entry.posicion}-${entry.jugador}-${entry.videojuego}`} className="border-b"><td className="p-2"><Badge variant={entry.posicion === 1 ? "default" : "secondary"}>#{entry.posicion}</Badge></td><td className="p-2 font-medium">{entry.jugador}</td><td className="p-2">{entry.videojuego}</td><td className="p-2 text-right font-semibold">{entry.puntuacion}</td></tr>) : <tr><td className="p-3 text-muted-foreground" colSpan={4}>Aún no hay puntuaciones registradas.</td></tr>}</tbody></table></div></CardContent></Card>
+        </div></main>
       </SidebarInset>
     </SidebarProvider>
   );

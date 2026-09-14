@@ -3,7 +3,7 @@ import pool from '../config/db.js';
 const insertar = async (jugador) => {
   const { nombre, gamertag, correo } = jugador;
   const [result] = await pool.query(
-    'INSERT INTO jugadores (nombre, gamertag, correo) VALUES (?, ?, ?)',
+    'INSERT INTO usuarios (nombre, gamertag, correo) VALUES (?, ?, ?)',
     [nombre, gamertag, correo]
   );
   return result;
@@ -11,7 +11,7 @@ const insertar = async (jugador) => {
 
 const buscarPorGamertag = async (gamertag) => {
   const [rows] = await pool.query(
-    'SELECT id FROM jugadores WHERE gamertag = ?',
+    'SELECT id FROM usuarios WHERE gamertag = ?',
     [gamertag]
   );
   return rows[0];
@@ -19,14 +19,14 @@ const buscarPorGamertag = async (gamertag) => {
 
 const obtenerTodos = async () => {
   const [rows] = await pool.query(
-    'SELECT id, gamertag, correo, fecha_registro FROM jugadores'
+    'SELECT id, nombre, gamertag, correo, fecha_registro FROM usuarios'
   );
   return rows;
 };
 
 const buscarPorNombreOGamertag = async (termino) => {
   const [rows] = await pool.query(
-    'SELECT id, gamertag, correo, fecha_registro FROM jugadores WHERE nombre LIKE ? OR gamertag LIKE ?',
+    'SELECT id, nombre, gamertag, correo, fecha_registro FROM usuarios WHERE nombre LIKE ? OR gamertag LIKE ?',
     [`%${termino}%`, `%${termino}%`]
   );
   return rows;

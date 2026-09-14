@@ -1,360 +1,105 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
+import { Gamepad2, Home, Search, ShieldCheck, UserPlus, Users } from "lucide-react";
 import { usePathname } from "next/navigation";
-import {
-  Award,
-  Gamepad2,
-  Home,
-  LogOut,
-  LogIn,
-  Search,
-  ShieldCheck,
-  Swords,
-  Trophy,
-  UserPlus,
-  Users,
-} from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
+import { obtenerJugadores, obtenerVideojuegos, registrarPuntuacion, type Jugador, type Videojuego } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
+  SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { getStoredTournamentData, saveTournamentData, type Player } from "@/lib/tournament-data";
 
 const navigation = [
   { title: "Inicio", href: "/anfitrion", icon: Home },
   { title: "Jugadores", href: "/anfitrion/jugadores", icon: UserPlus },
   { title: "Juegos", href: "/anfitrion/juegos", icon: Gamepad2 },
-  { title: "Estadísticas", href: "/anfitrion/estadisticas", icon: Trophy },
 ];
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("es-MX", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(value));
+}
 
 export default function AnfitrionJugadoresPage() {
   const pathname = usePathname();
-  const [players, setPlayers] = useState<Player[]>([]);
+  const [players, setPlayers] = useState<Jugador[]>([]);
+  const [games, setGames] = useState<Videojuego[]>([]);
   const [search, setSearch] = useState("");
-  const [selectedPlayerId, setSelectedPlayerId] = useState<string>("");
-  const [scoreDraft, setScoreDraft] = useState<Record<string, string>>({});
+  const [selectedPlayer, setSelectedPlayer] = useState("");
+  const [selectedGame, setSelectedGame] = useState("");
+  const [score, setScore] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  useEffect(() => {
-    const stored = getStoredTournamentData();
-    setPlayers(stored.players);
-    if (stored.players.length) setSelectedPlayerId(stored.players[0].id);
-  }, []);
-
-  useEffect(() => {
-    saveTournamentData(getStoredTournamentData().games, players);
-  }, [players]);
-
-  const filteredPlayers = useMemo(() => {
-    const value = search.trim().toLowerCase();
-    if (!value) return players;
-    return players.filter(
-      (player) =>
-        player.name.toLowerCase().includes(value) ||
-        player.gametag.toLowerCase().includes(value),
-    );
-  }, [players, search]);
-
-  const selectedPlayer =
-    players.find((player) => player.id === selectedPlayerId) ?? filteredPlayers[0] ?? players[0] ?? null;
-
-  const addScore = (playerId: string, gameId: string) => {
-    const key = `${playerId}-${gameId}`;
-    const raw = scoreDraft[key];
-    const value = Number(raw ?? "");
-
-    if (!Number.isFinite(value) || value < 0) return;
-
-    setPlayers((current) =>
-      current.map((player) => {
-        if (player.id !== playerId) return player;
-
-        return {
-          ...player,
-          games: player.games.map((game) =>
-            game.id === gameId ? { ...game, scores: [...game.scores, value] } : game,
-          ),
-        };
-      }),
-    );
-
-    setScoreDraft((current) => ({ ...current, [key]: "" }));
+  const loadPlayers = async (query = "") => {
+    setLoading(true);
+    try {
+      const response = await obtenerJugadores(query);
+      setPlayers(response.jugadores);
+    } catch (error) {
+      setMessage({ type: "error", text: error instanceof Error ? error.message : "No se pudieron cargar los jugadores." });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const removeScore = (playerId: string, gameId: string, scoreIndex: number) => {
-    setPlayers((current) =>
-      current.map((player) => {
-        if (player.id !== playerId) return player;
-        return {
-          ...player,
-          games: player.games.map((game) => {
-            if (game.id !== gameId) return game;
-            return {
-              ...game,
-              scores: game.scores.filter((_, index) => index !== scoreIndex),
-            };
-          }),
-        };
-      }),
-    );
+  useEffect(() => {
+    void Promise.resolve().then(() => loadPlayers());
+    void obtenerVideojuegos()
+      .then((response) => setGames(response.videojuegos))
+      .catch((error) => setMessage({ type: "error", text: error instanceof Error ? error.message : "No se pudieron cargar los videojuegos." }));
+  }, []);
+
+  const handleSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void loadPlayers(search);
+  };
+
+  const handleScore = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setMessage(null);
+    setSubmitting(true);
+    try {
+      await registrarPuntuacion({ jugador: Number(selectedPlayer), videojuego: Number(selectedGame), puntuacion: Number(score) });
+      setScore("");
+      setMessage({ type: "success", text: "La puntuación fue registrada correctamente." });
+    } catch (error) {
+      setMessage({ type: "error", text: error instanceof Error ? error.message : "No se pudo registrar la puntuación." });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <SidebarProvider>
       <Sidebar collapsible="icon">
-        <SidebarHeader className="p-4">
-          <Link href="/" className="flex items-center gap-3 overflow-hidden">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <ShieldCheck className="size-4" />
-            </div>
-            <span className="truncate font-semibold">Torneo Gamer</span>
-          </Link>
-        </SidebarHeader>
-
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupLabel>Navegación</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {navigation.map((item) => (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      render={<Link href={item.href} />}
-                      isActive={pathname === item.href}
-                      tooltip={item.title}
-                    >
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-
-        <SidebarFooter className="p-4 text-xs text-sidebar-foreground/60 group-data-[collapsible=icon]:hidden">
-          <Link href="/" className="flex items-center gap-2">
-            <LogOut className="size-4" />
-            Salir
-          </Link>
-        </SidebarFooter>
+        <SidebarHeader className="p-4"><Link href="/" className="flex items-center gap-3"><span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground"><ShieldCheck className="size-4" /></span><span className="font-semibold">Torneo Gamer</span></Link></SidebarHeader>
+        <SidebarContent><SidebarGroup><SidebarGroupLabel>Navegación</SidebarGroupLabel><SidebarGroupContent><SidebarMenu>{navigation.map((item) => <SidebarMenuItem key={item.href}><SidebarMenuButton render={<Link href={item.href} />} isActive={pathname === item.href} tooltip={item.title}><item.icon /><span>{item.title}</span></SidebarMenuButton></SidebarMenuItem>)}</SidebarMenu></SidebarGroupContent></SidebarGroup></SidebarContent>
       </Sidebar>
-
       <SidebarInset>
-        <header className="flex h-16 items-center gap-3 border-b px-4 sm:px-6">
-          <SidebarTrigger />
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Users className="size-4 text-primary" />
-            Jugadores
+        <header className="flex h-16 items-center gap-3 border-b px-4 sm:px-6"><SidebarTrigger /><span className="flex items-center gap-2 text-sm text-muted-foreground"><Users className="size-4 text-primary" />Jugadores y puntuaciones</span></header>
+        <main className="flex-1 p-4 sm:p-6"><div className="mx-auto max-w-6xl space-y-6">
+          {message && <p role="status" className={message.type === "success" ? "text-sm text-green-700" : "text-sm text-destructive"}>{message.text}</p>}
+          <div className="grid gap-6 lg:grid-cols-[1.4fr_0.9fr]">
+            <Card><CardHeader><CardTitle>Jugadores registrados</CardTitle></CardHeader><CardContent className="space-y-4">
+              <form className="flex gap-2" onSubmit={handleSearch}><Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Nombre o gamertag" /><Button type="submit" variant="outline" aria-label="Buscar"><Search /></Button></form>
+              <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b text-muted-foreground"><tr><th className="p-2">GAMERTAG</th><th className="p-2">CORREO</th><th className="p-2">FECHA DE REGISTRO</th></tr></thead><tbody>{loading ? <tr><td className="p-3" colSpan={3}>Cargando jugadores…</td></tr> : players.length ? players.map((player) => <tr className="border-b" key={player.id}><td className="p-2 font-medium">{player.gamertag}<span className="block text-xs text-muted-foreground">{player.nombre}</span></td><td className="p-2">{player.correo}</td><td className="p-2">{formatDate(player.fecha_registro)}</td></tr>) : <tr><td className="p-3 text-muted-foreground" colSpan={3}>No se encontraron jugadores.</td></tr>}</tbody></table></div>
+            </CardContent></Card>
+            <Card><CardHeader><CardTitle>Registrar puntuación</CardTitle><CardDescription>Selecciona un jugador y un videojuego existentes.</CardDescription></CardHeader><CardContent>
+              <form className="space-y-4" onSubmit={handleScore}>
+                <select className="h-9 w-full rounded-lg border bg-background px-3 text-sm" value={selectedPlayer} onChange={(event) => setSelectedPlayer(event.target.value)} required><option value="">Selecciona un jugador</option>{players.map((player) => <option key={player.id} value={player.id}>{player.gamertag} — {player.nombre}</option>)}</select>
+                <select className="h-9 w-full rounded-lg border bg-background px-3 text-sm" value={selectedGame} onChange={(event) => setSelectedGame(event.target.value)} required><option value="">Selecciona un videojuego</option>{games.map((game) => <option key={game.id} value={game.id}>{game.nombre} — {game.genero}</option>)}</select>
+                <Input type="number" min="0" step="1" value={score} onChange={(event) => setScore(event.target.value)} placeholder="Puntuación" required />
+                <Button type="submit" className="w-full" disabled={submitting || !players.length || !games.length}>{submitting ? "Guardando…" : "Guardar puntuación"}</Button>
+              </form>
+            </CardContent></Card>
           </div>
-        </header>
-
-        <main className="flex-1 p-4 sm:p-6">
-          <div className="mx-auto max-w-6xl space-y-6">
-            <div className="grid gap-6 xl:grid-cols-[0.9fr_1.7fr]">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Buscar jugador</CardTitle>
-                  <CardDescription>Busca por nombre o gametag.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="relative">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      value={search}
-                      onChange={(event) => setSearch(event.target.value)}
-                      placeholder="Buscar jugador..."
-                      className="pl-9"
-                    />
-                  </div>
-
-                  <div className="space-y-3">
-                    {filteredPlayers.map((player) => (
-                      <button
-                        key={player.id}
-                        type="button"
-                        onClick={() => setSelectedPlayerId(player.id)}
-                        className={`w-full rounded-xl border p-3 text-left transition-colors ${
-                          selectedPlayer?.id === player.id
-                            ? "border-primary bg-primary/5"
-                            : "border-border bg-background hover:bg-muted/50"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <div>
-                            <p className="font-medium">{player.name}</p>
-                            <p className="text-sm text-muted-foreground">{player.gametag}</p>
-                          </div>
-                          <Badge variant="outline">{player.elo}</Badge>
-                        </div>
-                        <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-                          <span>{player.region}</span>
-                          <span>{player.games.length} juegos</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                {selectedPlayer ? (
-                  <>
-                    <CardHeader>
-                      <div className="flex flex-wrap items-start justify-between gap-4">
-                        <div>
-                          <CardTitle className="text-2xl">{selectedPlayer.name}</CardTitle>
-                          <CardDescription>
-                            {selectedPlayer.gametag} · {selectedPlayer.region}
-                          </CardDescription>
-                        </div>
-                        <Badge variant="default" className="flex items-center gap-1">
-                          <Award className="size-3.5" />
-                          {selectedPlayer.elo}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-
-                    <CardContent className="space-y-6">
-                      <div className="grid gap-4 md:grid-cols-3">
-                        <div className="rounded-xl border bg-muted/30 p-3">
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Swords className="size-4 text-primary" />
-                            Juegos inscritos
-                          </div>
-                          <div className="mt-2 text-2xl font-bold">{selectedPlayer.games.length}</div>
-                        </div>
-
-                        <div className="rounded-xl border bg-muted/30 p-3">
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Gamepad2 className="size-4 text-primary" />
-                            Puntajes
-                          </div>
-                          <div className="mt-2 text-2xl font-bold">
-                            {selectedPlayer.games.reduce((sum, game) => sum + game.scores.length, 0)}
-                          </div>
-                        </div>
-
-                        <div className="rounded-xl border bg-muted/30 p-3">
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Award className="size-4 text-primary" />
-                            Promedio
-                          </div>
-                          <div className="mt-2 text-2xl font-bold">
-                            {selectedPlayer.games.length
-                              ? Math.round(
-                                  selectedPlayer.games.reduce(
-                                    (sum, game) =>
-                                      sum +
-                                      game.scores.reduce((gameTotal, score) => gameTotal + score, 0),
-                                    0,
-                                  ) /
-                                    selectedPlayer.games.reduce(
-                                      (count, game) => count + (game.scores.length || 1),
-                                      0,
-                                    ),
-                                )
-                              : 0}
-                          </div>
-                        </div>
-                      </div>
-
-                      <Separator />
-
-                      <div className="space-y-4">
-                        {selectedPlayer.games.map((game) => {
-                          const key = `${selectedPlayer.id}-${game.id}`;
-
-                          return (
-                            <div key={game.id} className="rounded-xl border bg-muted/20 p-4">
-                              <div className="flex flex-wrap items-center justify-between gap-3">
-                                <div>
-                                  <p className="font-semibold">{game.name}</p>
-                                  <p className="text-sm text-muted-foreground">{game.role}</p>
-                                </div>
-                                <Badge variant={game.status === "Activo" ? "default" : "secondary"}>{game.status}</Badge>
-                              </div>
-
-                              <div className="mt-3 flex flex-wrap gap-2">
-                                {game.scores.length ? (
-                                  game.scores.map((score, index) => (
-                                    <div
-                                      key={`${game.id}-${index}`}
-                                      className="flex items-center gap-2 rounded-full border bg-background px-2.5 py-1 text-xs font-medium"
-                                    >
-                                      <span>{score}</span>
-                                      <button
-                                        type="button"
-                                        onClick={() => removeScore(selectedPlayer.id, game.id, index)}
-                                        className="text-muted-foreground transition-colors hover:text-destructive"
-                                        aria-label={`Eliminar marcador ${score}`}
-                                      >
-                                        ×
-                                      </button>
-                                    </div>
-                                  ))
-                                ) : (
-                                  <span className="text-sm text-muted-foreground">Sin puntuaciones registradas</span>
-                                )}
-                              </div>
-
-                              <div className="mt-4 grid gap-2 md:grid-cols-[1fr_auto]">
-                                <Input
-                                  type="number"
-                                  min="0"
-                                  value={scoreDraft[key] ?? ""}
-                                  onChange={(event) =>
-                                    setScoreDraft((current) => ({
-                                      ...current,
-                                      [key]: event.target.value,
-                                    }))
-                                  }
-                                  placeholder="Agregar puntuación"
-                                />
-                                <Button size="sm" onClick={() => addScore(selectedPlayer.id, game.id)}>
-                                  Añadir
-                                </Button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </CardContent>
-                  </>
-                ) : (
-                  <CardContent className="flex min-h-[240px] items-center justify-center text-muted-foreground">
-                    No hay jugadores que coincidan con la búsqueda.
-                  </CardContent>
-                )}
-              </Card>
-            </div>
-          </div>
-        </main>
+        </div></main>
       </SidebarInset>
     </SidebarProvider>
   );

@@ -17,4 +17,8 @@ const listar = async () => {
   return await jugadorModel.obtenerTodos();
 };
 
-export default { crear, listar };
+const buscar = async (termino) => {
+  return await jugadorModel.buscarPorNombreOGamertag(termino);
+};
+
+export default { crear, listar, buscar };

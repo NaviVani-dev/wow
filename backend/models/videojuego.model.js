@@ -17,4 +17,12 @@ const buscarPorNombre = async (nombre) => {
   return rows[0];
 };
 
-export default { insertar, buscarPorNombre };
+const obtenerTodos = async () => {
+  const [rows] = await pool.query(
+    'SELECT id, nombre, genero FROM videojuegos'
+  );
+  return rows;
+};
+
+export default { insertar, buscarPorNombre, obtenerTodos };
+

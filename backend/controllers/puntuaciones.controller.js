@@ -10,4 +10,13 @@ const registrar = async (req, res) => {
   }
 };
 
-export default { registrar };
+const consultarRanking = async (req, res) => {
+  try {
+    const ranking = await puntuacionesService.listarRanking();
+    res.json({ ok: true, ranking });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
+  }
+};
+
+export default { registrar, consultarRanking };

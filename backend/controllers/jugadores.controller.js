@@ -19,4 +19,17 @@ const consultar = async (req, res) => {
   }
 };
 
-export default { registrar, consultar };
+const buscar = async (req, res) => {
+  const { q } = req.query;
+  if (!q || q.trim() === '') {
+    return res.status(400).json({ ok: false, error: "El parámetro 'q' es obligatorio" });
+  }
+  try {
+    const jugadores = await jugadoresService.buscar(q.trim());
+    res.json({ ok: true, jugadores });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
+  }
+};
+
+export default { registrar, consultar, buscar };

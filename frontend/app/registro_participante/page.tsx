@@ -42,15 +42,6 @@ export default function RegistroPage() {
                 <label htmlFor="email" className="text-sm font-medium">Correo electrónico</label>
                 <Input id="email" name="email" type="email" placeholder="nombre@correo.com" autoComplete="email" required />
               </div>
-              <div className="space-y-2">
-                <label htmlFor="juego" className="text-sm font-medium">Juego</label>
-                <select id="juego" name="juego" required className="h-9 w-full rounded-md border border-input bg-transparent px-2.5 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50">
-                  <option value="">Selecciona un juego</option>
-                  <option value="fc-26">EA SPORTS FC 26</option>
-                  <option value="rocket-league">Rocket League</option>
-                  <option value="esports">Torneo de eSports</option>
-                </select>
-              </div>
               <label className="flex items-start gap-2 text-sm text-muted-foreground">
                 <input type="checkbox" required className="mt-1 size-4 rounded border-input accent-primary" />
                 Acepto las reglas y condiciones del torneo.

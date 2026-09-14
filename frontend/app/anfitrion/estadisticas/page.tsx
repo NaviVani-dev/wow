@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   Activity,
-  ArrowRight,
+  ArrowUpRight,
   Gamepad2,
   Home,
   LogOut,
@@ -50,7 +50,7 @@ const navigation = [
   { title: "Estadísticas", href: "/anfitrion/estadisticas", icon: Trophy },
 ];
 
-export default function AnfitrionHomePage() {
+export default function AnfitrionEstadisticasPage() {
   const pathname = usePathname();
   const [games, setGames] = useState<TournamentGame[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
@@ -61,22 +61,31 @@ export default function AnfitrionHomePage() {
     setPlayers(stored.players);
   }, []);
 
+  const leaderboard = useMemo(
+    () =>
+      players
+        .map((player) => {
+          const total = player.games.reduce(
+            (sum, game) => sum + game.scores.reduce((acc, score) => acc + score, 0),
+            0,
+          );
+          const count = player.games.reduce((sum, game) => sum + game.scores.length, 0);
+          return {
+            ...player,
+            total,
+            average: count ? Math.round(total / count) : 0,
+          };
+        })
+        .sort((a, b) => b.total - a.total),
+    [players],
+  );
+
   const totalScores = players.reduce(
     (sum, player) => sum + player.games.reduce((count, game) => count + game.scores.length, 0),
     0,
   );
 
-  const topPlayer = players
-    .map((player) => ({
-      ...player,
-      average:
-        player.games.reduce((sum, game) => sum + game.scores.reduce((a, b) => a + b, 0), 0) /
-        Math.max(
-          player.games.reduce((count, game) => count + (game.scores.length || 1), 0),
-          1,
-        ),
-    }))
-    .sort((a, b) => b.average - a.average)[0];
+  const bestPlayer = leaderboard[0];
 
   return (
     <SidebarProvider>
@@ -125,24 +134,12 @@ export default function AnfitrionHomePage() {
           <SidebarTrigger />
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Activity className="size-4 text-primary" />
-            Panel del anfitrión
+            Estadísticas
           </div>
         </header>
 
         <main className="flex-1 p-4 sm:p-6">
-          <div className="mx-auto max-w-7xl space-y-6">
-            <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-              <div>
-                <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">Resumen</p>
-                <h1 className="text-3xl font-bold tracking-tight">Gestión del torneo</h1>
-              </div>
-              <Button asChild>
-                <Link href="/anfitrion/juegos">
-                  Crear juego <ArrowRight className="ml-2 size-4" />
-                </Link>
-              </Button>
-            </div>
-
+          <div className="mx-auto max-w-6xl space-y-6">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <Card>
                 <CardHeader className="pb-3">
@@ -166,7 +163,7 @@ export default function AnfitrionHomePage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold">{games.length}</div>
-                  <p className="mt-2 text-xs text-muted-foreground">Categorías del torneo</p>
+                  <p className="mt-2 text-xs text-muted-foreground">Competiciones en curso</p>
                 </CardContent>
               </Card>
 
@@ -179,74 +176,93 @@ export default function AnfitrionHomePage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold">{totalScores}</div>
-                  <p className="mt-2 text-xs text-muted-foreground">Registros cargados</p>
+                  <p className="mt-2 text-xs text-muted-foreground">Puntos agregados</p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <CardDescription>Máximo</CardDescription>
+                    <CardDescription>Líder</CardDescription>
                     <Trophy className="size-4 text-primary" />
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-lg font-bold">{topPlayer?.name ?? "Sin datos"}</div>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    {topPlayer ? `${topPlayer.elo} · ${Math.round(topPlayer.average)} avg` : "Esperando resultados"}
-                  </p>
+                  <div className="text-lg font-bold">{bestPlayer ? bestPlayer.name : "Sin lider"}</div>
+                  <p className="mt-2 text-xs text-muted-foreground">{bestPlayer ? `${bestPlayer.total} pts` : "Esperando datos"}</p>
                 </CardContent>
               </Card>
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-[1.3fr_0.9fr]">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Juegos activos</CardTitle>
-                  <CardDescription>Listado de partidas disponibles en el torneo.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {games.map((game) => (
-                    <div key={game.id} className="rounded-xl border bg-muted/20 p-4">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="font-semibold">{game.name}</p>
-                          <p className="text-sm text-muted-foreground">{game.genre} · {game.format}</p>
+            <Card>
+              <CardHeader>
+                <CardTitle>Ranking general</CardTitle>
+                <CardDescription>Clasificación de rendimiento por jugador.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {leaderboard.map((player, index) => (
+                  <div key={player.id} className="rounded-xl border bg-muted/20 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
+                          #{index + 1}
                         </div>
-                        <Badge variant={game.status === "Abierto" ? "default" : "secondary"}>{game.status}</Badge>
+                        <div>
+                          <p className="font-semibold">{player.name}</p>
+                          <p className="text-sm text-muted-foreground">{player.gametag}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <Badge variant={index === 0 ? "default" : "secondary"}>{player.total} pts</Badge>
+                        <Badge variant="outline">{player.average} avg</Badge>
                       </div>
                     </div>
-                  ))}
-                </CardContent>
-              </Card>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Acceso rápido</CardTitle>
-                  <CardDescription>Herramientas principales del anfitrión.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button variant="outline" className="w-full justify-between" asChild>
-                    <Link href="/anfitrion/jugadores">
-                      Buscar jugadores
-                      <ArrowRight className="size-4" />
-                    </Link>
-                  </Button>
-                  <Button variant="outline" className="w-full justify-between" asChild>
-                    <Link href="/anfitrion/juegos">
-                      Crear nuevos juegos
-                      <ArrowRight className="size-4" />
-                    </Link>
-                  </Button>
-                  <Button variant="outline" className="w-full justify-between" asChild>
-                    <Link href="/anfitrion/estadisticas">
-                      Ver estadísticas
-                      <ArrowRight className="size-4" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Desempeño por juego</CardTitle>
+                <CardDescription>Cuántos puntos registró cada juego del torneo.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {games.map((game) => {
+                  const points = players.reduce(
+                    (sum, player) =>
+                      sum +
+                      (player.games.find((entry) => entry.id === game.id)?.scores.reduce((gameTotal, score) => gameTotal + score, 0) ?? 0),
+                    0,
+                  );
+                  const maxPoints = Math.max(
+                    ...games.map((entry) =>
+                      players.reduce(
+                        (sum, player) =>
+                          sum +
+                          (player.games.find((gameEntry) => gameEntry.id === entry.id)?.scores.reduce((gameTotal, score) => gameTotal + score, 0) ?? 0),
+                        0,
+                      ),
+                    ),
+                    1,
+                  );
+                  const percentage = (points / maxPoints) * 100;
+
+                  return (
+                    <div key={game.id}>
+                      <div className="mb-2 flex items-center justify-between text-sm">
+                        <span className="font-medium">{game.name}</span>
+                        <span className="text-muted-foreground">{points} pts</span>
+                      </div>
+                      <div className="h-2.5 overflow-hidden rounded-full bg-muted">
+                        <div className="h-full rounded-full bg-primary" style={{ width: `${Math.max(percentage, 10)}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
           </div>
         </main>
       </SidebarInset>

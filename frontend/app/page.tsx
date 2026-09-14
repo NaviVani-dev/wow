@@ -11,7 +11,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
@@ -40,7 +39,7 @@ import {
 const navigation = [
   { title: "Inicio", href: "/", icon: Home },
   { title: "Registro", href: "/registro_participante", icon: UserPlus },
-  { title: "Acceso anfitrión", href: "/anfitrion/login", icon: LogIn },
+  { title: "Anfitriones", href: "/anfitrion/login/", icon: LogIn },
 ]
 
 const slides = [
@@ -73,7 +72,6 @@ export default function HomePage() {
 
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel>Navegación</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {navigation.map((item) => (
@@ -116,10 +114,10 @@ export default function HomePage() {
               {slides.map((slide) => (
                 <CarouselItem key={slide.title}>
                   <article
-                    className="relative flex min-h-[560px] overflow-hidden rounded-3xl bg-cover bg-center shadow-xl sm:min-h-[680px]"
+                    className="relative flex min-h-140 overflow-hidden rounded-3xl bg-cover bg-center shadow-xl sm:min-h-170"
                     style={{ backgroundImage: `url(${slide.image})` }}
                   >
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-black/10" />
+                    <div className="absolute inset-0 bg-linear-to-t from-black via-black/45 to-black/10" />
                     <div className="relative z-10 flex w-full flex-col justify-end p-8 text-white sm:p-14">
                       <p className="text-sm font-semibold tracking-[0.22em] text-primary-foreground/80">JUEGO DESTACADO</p>
                       <h1 className="mt-3 text-4xl font-bold tracking-tight sm:text-6xl">{slide.title}</h1>

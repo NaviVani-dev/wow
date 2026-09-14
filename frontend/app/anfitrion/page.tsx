@@ -6,7 +6,6 @@ import { Activity, Gamepad2, Home, ShieldCheck, Target, Trophy, UserPlus, Users 
 import { usePathname } from "next/navigation";
 
 import { obtenerEstadisticas, obtenerRanking, type Estadisticas, type PuntuacionRanking } from "@/lib/api";
-import { useAnfitrionAuth } from "@/hooks/use-anfitrion-auth";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -22,22 +21,18 @@ const navigation = [
 
 export default function AnfitrionHomePage() {
   const pathname = usePathname();
-  const { anfitrion, checkingSession } = useAnfitrionAuth();
   const [stats, setStats] = useState<Estadisticas | null>(null);
   const [ranking, setRanking] = useState<PuntuacionRanking[]>([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (checkingSession || !anfitrion) return;
     void Promise.all([obtenerEstadisticas(), obtenerRanking()])
       .then(([statsResponse, rankingResponse]) => {
         setStats(statsResponse.estadisticas);
         setRanking(rankingResponse.ranking);
       })
       .catch((requestError) => setError(requestError instanceof Error ? requestError.message : "No se pudieron cargar las estadísticas."));
-  }, [anfitrion, checkingSession]);
-
-  if (checkingSession) return <main className="grid min-h-screen place-items-center text-sm text-muted-foreground">Verificando sesión…</main>;
+  }, []);
 
   const metrics = [
     { label: "Jugadores", value: stats?.total_jugadores, icon: Users },

@@ -1,7 +1,7 @@
 import Link from "next/link"
 import {
   Home,
-  LogIn,
+  LayoutDashboard,
   UserPlus,
 } from "lucide-react"
 
@@ -39,7 +39,7 @@ import {
 const navigation = [
   { title: "Inicio", href: "/", icon: Home },
   { title: "Registro", href: "/registro_participante", icon: UserPlus },
-  { title: "Anfitriones", href: "/anfitrion/login/", icon: LogIn },
+  { title: "Panel", href: "/anfitrion", icon: LayoutDashboard },
 ]
 
 const slides = [

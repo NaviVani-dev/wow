@@ -13,4 +13,8 @@ const crear = async (datos) => {
   return await videojuegoModel.insertar({ nombre, genero });
 };
 
-export default { crear };
+const listar = async () => {
+  return await videojuegoModel.obtenerTodos();
+};
+
+export default { crear, listar };

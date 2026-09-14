@@ -24,4 +24,12 @@ const obtenerTodos = async () => {
   return rows;
 };
 
-export default { insertar, buscarPorGamertag, obtenerTodos };
+const buscarPorNombreOGamertag = async (termino) => {
+  const [rows] = await pool.query(
+    'SELECT gamertag, correo, fecha_registro FROM jugadores WHERE nombre LIKE ? OR gamertag LIKE ?',
+    [`%${termino}%`, `%${termino}%`]
+  );
+  return rows;
+};
+
+export default { insertar, buscarPorGamertag, obtenerTodos, buscarPorNombreOGamertag };

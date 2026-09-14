@@ -4,6 +4,7 @@ import validarCampos from '../middlewares/validaciones.js';
 
 const router = Router();
 
+router.get('/', videojuegosController.consultar);
 router.post('/', validarCampos(['nombre', 'genero']), videojuegosController.registrar);
 
 export default router;

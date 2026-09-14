@@ -4,6 +4,7 @@ import validarCampos from '../middlewares/validaciones.js';
 
 const router = Router();
 
+router.get('/', puntuacionesController.consultarRanking);
 router.post('/', validarCampos(['jugador', 'videojuego', 'puntuacion']), puntuacionesController.registrar);
 
 export default router;
